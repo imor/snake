@@ -20,21 +20,38 @@ function Point(x, y) {
     };
 
     Point.prototype.getY = function() {
-        return _x;
+        return _y;
     };
 }
 
-function Segment(headPosition, direction, numberOfCells) {
+function Segment(headPosition, headCell, direction, numberOfCells) {
     var _headPosition = headPosition;
+    var _headCell = headCell;
     var _direction = direction;
     var _numberOfCells = numberOfCells;
 
-    Segment.prototype.addCell = function(cell) {
+    Segment.prototype.addCell = function() {
         _numberOfCells = _numberOfCells + 1;
     };
 
     Segment.prototype.removeCell = function() {
         _numberOfCells = _numberOfCells - 1;
+    };
+
+    Segment.prototype.getLength = function() {
+        return _numberOfCells;
+    }
+
+    Segment.prototype.getHeadPosition = function() {
+        return _headPosition;
+    };
+
+    Segment.prototype.getHeadCell = function() {
+        return _headCell;
+    };
+
+    Segment.prototype.getDirection = function() {
+        return _direction;
     };
 }
 
