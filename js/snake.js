@@ -28,36 +28,42 @@ function getOppositeDirection(direction) {
     }
 }
 
-function Cell(graphics, size) {
-    var _size = size;
-    var _graphics = graphics;
-
-    Cell.prototype.getSize = function() {
-        return _size;
-    };
+function Cell(graphics, position, size) {
+    this._graphics = graphics;
+    this._position = position;
+    this._size = size;
 
     Cell.prototype.getGraphics = function() {
-        return _graphics;
+        return this._graphics;
+    };
+
+    Cell.prototype.getPosition = function() {
+        return this._position;
+    };
+
+    Cell.prototype.getSize = function() {
+        return this._size;
     };
 
     Cell.prototype.draw = function(position, cellColor, borderColor, borderWidth) {
+        var position = position || this._position;
         cellColor = cellColor || 0xd4d4d4;
         borderColor = borderColor || 0xffffff;
         borderWidth = borderWidth || 1;
 
-        _graphics.beginFill(cellColor);
-        _graphics.lineStyle(borderWidth, borderColor);
+        this._graphics.beginFill(cellColor);
+        this._graphics.lineStyle(borderWidth, borderColor);
 
         var x = position.getX();
         var y = position.getY();
         var side = this.getSize();
         // draw a shape
-        _graphics.moveTo(x, y);
-        _graphics.lineTo(x + side, y);
-        _graphics.lineTo(x + side, y + side);
-        _graphics.lineTo(x, y + side);
-        _graphics.lineTo(x, y);
-        _graphics.endFill();
+        this._graphics.moveTo(x, y);
+        this._graphics.lineTo(x + side, y);
+        this._graphics.lineTo(x + side, y + side);
+        this._graphics.lineTo(x, y + side);
+        this._graphics.lineTo(x, y);
+        this._graphics.endFill();
     }
 
     Cell.prototype.update = function(lag) {
@@ -65,96 +71,93 @@ function Cell(graphics, size) {
 }
 
 function Point(x, y) {
-    var _x = x;
-    var _y = y;
+    this._x = x;
+    this._y = y;
 
     Point.prototype.getX = function() {
-        return _x;
+        return this._x;
     };
 
     Point.prototype.getY = function() {
-        return _y;
+        return this._y;
     };
 }
 
-function Segment(graphics, headPosition, headCell, direction, numberOfCells, stepsPerSecond) {
-    var _headPosition = headPosition;
-    var _headCell = headCell;
-    var _direction = direction;
-    var _numberOfCells = numberOfCells;
-    var _graphics = graphics;
-    var _updateInterval = 1000 / stepsPerSecond;
-    var _timeSinceLastUpdate = 0;
+function Segment(graphics, headCell, direction, numberOfCells) {
+    this._headCell = headCell;
+    this._direction = direction;
+    this._graphics = graphics;
+    this._cells = [];
+    this._cells.push(headCell);
+    var position = this._headCell.getPosition();
+    var size = headCell.getSize();
+    for (var i = 1;i < numberOfCells;i++) {
+        position = getAdjacentCellPosition(position, headCell, direction);
+        this._cells.push(new Cell(graphics, position, size));
+    }
 
     stage.addChild(graphics);
 
     Segment.prototype.addCell = function() {
-        _numberOfCells = _numberOfCells + 1;
+        var lastCell = _cells[_cells.length - 1];
+        var position = getAdjacentCellPosition(lastCell.getPosition(), lastCell, this._direction);
+        this._cells.push(new Cell(this._graphics, position, lastCell.getSize()));
     };
 
     Segment.prototype.removeCell = function() {
-        _numberOfCells = _numberOfCells - 1;
+        this._cells.pop();
     };
 
     Segment.prototype.getLength = function() {
-        return _numberOfCells;
+        return this._cells.length;
     }
 
-    Segment.prototype.getHeadPosition = function() {
-        return _headPosition;
-    };
-
     Segment.prototype.getHeadCell = function() {
-        return _headCell;
+        return this._headCell;
     };
 
     Segment.prototype.getDirection = function() {
-        return _direction;
+        return this._direction;
     };
 
     Segment.prototype.getGraphics = function() {
-        return _graphics;
+        return this._graphics;
     };
 
     Segment.prototype.draw = function() {
-        var headCell = this.getHeadCell();
-        var size = headCell.getSize();
-        var position = this.getHeadPosition();
-        var direction= getOppositeDirection(this.getDirection());
-
-        headCell.draw(position);
-        for (var i = 1;i < this.getLength();i++) {
-            position = getAdjacentCellPosition(position, headCell, direction);
-            headCell.draw(position);
-        }
+        this._cells.forEach(function(cell) {
+            cell.draw();
+        });
     }
 
     Segment.prototype.update = function(lag) {
-        _timeSinceLastUpdate = _timeSinceLastUpdate + lag;
-
-        if (_timeSinceLastUpdate >= _updateInterval) {
-            _graphics.position.x += _headCell.getSize();
-            _timeSinceLastUpdate = 0;
-        }
+        this._graphics.position.x += this._headCell.getSize();
     }
 }
 
-function Snake() {
-    var _segments = [];
+function Snake(stepsPerSecond) {
+    this._segments = [];
+    this._updateInterval = 1000 / stepsPerSecond;
+    this._timeSinceLastUpdate = 0;
 
     Snake.prototype.addSegment = function(segment) {
-        _segments.push(segment);
+        this._segments.push(segment);
     }
 
     Snake.prototype.draw = function() {
-        _segments.forEach(function(segment) {
+        this._segments.forEach(function(segment) {
             segment.draw();
         });
     }
 
     Snake.prototype.update = function(lag) {
-        _segments.forEach(function(segment) {
-            segment.update(lag);
-        });
+        this._timeSinceLastUpdate = this._timeSinceLastUpdate + lag;
+
+        if (this._timeSinceLastUpdate >= this._updateInterval) {
+            this._segments.forEach(function(segment) {
+                segment.update(lag);
+            });
+            this._timeSinceLastUpdate = 0;
+        }
     };
 }

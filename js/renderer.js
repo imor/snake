@@ -8,8 +8,8 @@ var renderer = PIXI.autoDetectRenderer(400, 400);
 document.body.appendChild(renderer.view);
 
 var graphics = new PIXI.Graphics();
-var segment = new Segment(graphics, new Point(40, 10), new Cell(graphics, 10), RIGHT, 3, 10);
-var snake = new Snake();
+var segment = new Segment(graphics, new Cell(graphics, new Point(40, 10), 10), RIGHT, 3);
+var snake = new Snake(10);
 snake.addSegment(segment);
 var world = new World(Date.now());
 world.addEntity(snake);

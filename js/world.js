@@ -1,6 +1,6 @@
 function World(startTime) {
     var _entities = [];
-    var _lastTime = startTime;
+    var _lastUpdateTime = startTime;
 
     World.prototype.addEntity = function(entity) {
         _entities.push(entity);
@@ -8,8 +8,8 @@ function World(startTime) {
 
     World.prototype.update = function() {
         var currentTime = Date.now();
-        var lag = currentTime - _lastTime;
-        _lastTime = currentTime;
+        var lag = currentTime - _lastUpdateTime;
+        _lastUpdateTime = currentTime;
         _entities.forEach(function (entity) {
             entity.update(lag);
         });
