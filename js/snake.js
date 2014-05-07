@@ -110,18 +110,32 @@ function Segment(position, direction, numberOfCells) {
         this._cells.push(currentCell);
     }
 
-    Segment.prototype.addCell = function() {
-        var lastCell = this._cells[this._cells.length - 1];
-        var position = getAdjacentCellPosition(lastCell, this._direction);
-        this._cells.push(new Cell(position, lastCell.getSize()));
+    Segment.prototype.addCellToFront = function(cell) {
+        this._cells.unshift(cell);
     };
 
-    Segment.prototype.removeCell = function() {
-        this._cells.pop();
+    Segment.prototype.addCellToBack = function(cell) {
+        this._cells.push(cell);
+    };
+
+    Segment.prototype.removeCellFromFront = function() {
+        return this._cells.shift();
+    };
+
+    Segment.prototype.removeCellFromBack = function() {
+        return this._cells.pop();
     };
 
     Segment.prototype.getLength = function() {
         return this._cells.length;
+    }
+
+    Segment.prototype.getCell = function(index) {
+        return this._cells[index];
+    }
+
+    Segment.prototype.getDirection = function(index) {
+        return this._direction;
     }
 
     Segment.prototype.draw = function() {
@@ -131,16 +145,6 @@ function Segment(position, direction, numberOfCells) {
     }
 
     Segment.prototype.update = function(lag) {
-        var lastCell = this._cells.pop();
-        var firstCell = this._cells[0];
-        var position = getAdjacentCellPosition(firstCell, this._direction);
-        lastCell.setPosition(position);
-        this._cells.unshift(lastCell);
-        var headCellColor = firstCell.getCellColor();
-        firstCell.setCellColor(lastCell.getCellColor());
-        lastCell.setCellColor(headCellColor);
-        firstCell.draw();
-        lastCell.draw();
     }
 }
 
@@ -163,9 +167,20 @@ function Snake(stepsPerSecond) {
         this._timeSinceLastUpdate = this._timeSinceLastUpdate + lag;
 
         if (this._timeSinceLastUpdate >= this._updateInterval) {
-            this._segments.forEach(function(segment) {
-                segment.update(lag);
-            });
+
+            var firstSegment = this._segments[0];
+            var lastSegment = this._segments[this._segments.length - 1];
+            var lastCell = lastSegment.removeCellFromBack();
+            var firstCell = firstSegment.getCell(0);
+            var position = getAdjacentCellPosition(firstCell, firstSegment.getDirection());
+            lastCell.setPosition(position);
+            firstSegment.addCellToFront(lastCell);
+            lastCell.draw();
+
+            if (lastSegment.getLength() === 0) {
+                this._segments.pop();
+            }
+
             this._timeSinceLastUpdate = 0;
         }
     };
