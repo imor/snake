@@ -7,9 +7,8 @@ var renderer = PIXI.autoDetectRenderer(400, 400);
 // add the renderer view element to the DOM
 document.body.appendChild(renderer.view);
 
-var graphics = new PIXI.Graphics();
-var segment = new Segment(graphics, new Cell(graphics, new Point(40, 10), 10), RIGHT, 3);
-var snake = new Snake(10);
+var segment = new Segment(RIGHT, 3);
+var snake = new Snake(1);
 snake.addSegment(segment);
 var world = new World(Date.now());
 world.addEntity(snake);

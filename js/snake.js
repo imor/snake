@@ -3,8 +3,9 @@ var RIGHT = 2;
 var DOWN = 3;
 var LEFT = 4;
 
-function getAdjacentCellPosition(position, cell, direction) {
+function getAdjacentCellPosition(cell, direction) {
     var size = cell.getSize();
+    var position = cell.getPosition();
     if (direction == UP) {
         return new Point(position.getX(), position.getY() - size);
     } else if (direction == RIGHT) {
@@ -28,34 +29,37 @@ function getOppositeDirection(direction) {
     }
 }
 
-function Cell(graphics, position, size) {
-    this._graphics = graphics;
+function Cell(position, size, cellColor, borderColor, borderWidth) {
+    this._graphics = new PIXI.Graphics();
+    stage.addChild(this._graphics);
     this._position = position;
     this._size = size;
-
-    Cell.prototype.getGraphics = function() {
-        return this._graphics;
-    };
+    this._cellColor = cellColor || 0xd4d4d4;
+    this._borderColor = borderColor || 0xffffff;
+    this._borderWidth = borderWidth || 1;
 
     Cell.prototype.getPosition = function() {
         return this._position;
+    };
+
+    Cell.prototype.setPosition = function(newPosition) {
+        //HACK:I don't like setting position twice. Once in _position and once in _graph
+        this._position = newPosition;
+        this._graphics.position.x = newPosition.getX();
+        this._graphics.position.y = newPosition.getY();
     };
 
     Cell.prototype.getSize = function() {
         return this._size;
     };
 
-    Cell.prototype.draw = function(position, cellColor, borderColor, borderWidth) {
-        var position = position || this._position;
-        cellColor = cellColor || 0xd4d4d4;
-        borderColor = borderColor || 0xffffff;
-        borderWidth = borderWidth || 1;
+    Cell.prototype.draw = function() {
 
-        this._graphics.beginFill(cellColor);
-        this._graphics.lineStyle(borderWidth, borderColor);
+        this._graphics.beginFill(this._cellColor);
+        this._graphics.lineStyle(this._borderWidth, this._borderColor);
 
-        var x = position.getX();
-        var y = position.getY();
+        var x = this._position.getX();
+        var y = this._position.getY();
         var side = this.getSize();
         // draw a shape
         this._graphics.moveTo(x, y);
@@ -67,6 +71,7 @@ function Cell(graphics, position, size) {
     }
 
     Cell.prototype.update = function(lag) {
+        this._graphics.position.x += this._size;
     }
 }
 
@@ -83,25 +88,24 @@ function Point(x, y) {
     };
 }
 
-function Segment(graphics, headCell, direction, numberOfCells) {
-    this._headCell = headCell;
+function Segment(direction, numberOfCells) {
     this._direction = direction;
-    this._graphics = graphics;
+    var headCell = new Cell(new Point(60, 10), 10, 0x949494);
     this._cells = [];
     this._cells.push(headCell);
-    var position = this._headCell.getPosition();
+    var position = headCell.getPosition();
     var size = headCell.getSize();
+    var currentCell = headCell;
     for (var i = 1;i < numberOfCells;i++) {
-        position = getAdjacentCellPosition(position, headCell, direction);
-        this._cells.push(new Cell(graphics, position, size));
+        position = getAdjacentCellPosition(currentCell, getOppositeDirection(direction));
+        currentCell = new Cell(position, size);
+        this._cells.push(currentCell);
     }
 
-    stage.addChild(graphics);
-
     Segment.prototype.addCell = function() {
-        var lastCell = _cells[_cells.length - 1];
-        var position = getAdjacentCellPosition(lastCell.getPosition(), lastCell, this._direction);
-        this._cells.push(new Cell(this._graphics, position, lastCell.getSize()));
+        var lastCell = this._cells[this._cells.length - 1];
+        var position = getAdjacentCellPosition(lastCell, this._direction);
+        this._cells.push(new Cell(position, lastCell.getSize()));
     };
 
     Segment.prototype.removeCell = function() {
@@ -112,18 +116,6 @@ function Segment(graphics, headCell, direction, numberOfCells) {
         return this._cells.length;
     }
 
-    Segment.prototype.getHeadCell = function() {
-        return this._headCell;
-    };
-
-    Segment.prototype.getDirection = function() {
-        return this._direction;
-    };
-
-    Segment.prototype.getGraphics = function() {
-        return this._graphics;
-    };
-
     Segment.prototype.draw = function() {
         this._cells.forEach(function(cell) {
             cell.draw();
@@ -131,7 +123,9 @@ function Segment(graphics, headCell, direction, numberOfCells) {
     }
 
     Segment.prototype.update = function(lag) {
-        this._graphics.position.x += this._headCell.getSize();
+        this._cells.forEach(function(cell) {
+            cell.update();
+        });
     }
 }
 
