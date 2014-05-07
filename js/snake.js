@@ -53,25 +53,33 @@ function Cell(position, size, cellColor, borderColor, borderWidth) {
         return this._size;
     };
 
+    Cell.prototype.getCellColor = function() {
+        return this._cellColor;
+    };
+
+    Cell.prototype.setCellColor = function(cellColor) {
+        this._cellColor = cellColor;
+    };
+
     Cell.prototype.draw = function() {
 
         this._graphics.beginFill(this._cellColor);
         this._graphics.lineStyle(this._borderWidth, this._borderColor);
 
-        var x = this._position.getX();
-        var y = this._position.getY();
         var side = this.getSize();
         // draw a shape
-        this._graphics.moveTo(x, y);
-        this._graphics.lineTo(x + side, y);
-        this._graphics.lineTo(x + side, y + side);
-        this._graphics.lineTo(x, y + side);
-        this._graphics.lineTo(x, y);
+        this._graphics.moveTo(0, 0);
+        this._graphics.lineTo(side, 0);
+        this._graphics.lineTo(side, side);
+        this._graphics.lineTo(0, side);
+        this._graphics.lineTo(0, 0);
         this._graphics.endFill();
+
+        this._graphics.position.x = this._position.getX();
+        this._graphics.position.y = this._position.getY();
     }
 
     Cell.prototype.update = function(lag) {
-        this._graphics.position.x += this._size;
     }
 }
 
@@ -88,9 +96,9 @@ function Point(x, y) {
     };
 }
 
-function Segment(direction, numberOfCells) {
+function Segment(position, direction, numberOfCells) {
     this._direction = direction;
-    var headCell = new Cell(new Point(60, 10), 10, 0x949494);
+    var headCell = new Cell(position, 10, 0x949494);
     this._cells = [];
     this._cells.push(headCell);
     var position = headCell.getPosition();
@@ -123,9 +131,16 @@ function Segment(direction, numberOfCells) {
     }
 
     Segment.prototype.update = function(lag) {
-        this._cells.forEach(function(cell) {
-            cell.update();
-        });
+        var lastCell = this._cells.pop();
+        var firstCell = this._cells[0];
+        var position = getAdjacentCellPosition(firstCell, this._direction);
+        lastCell.setPosition(position);
+        this._cells.unshift(lastCell);
+        var headCellColor = firstCell.getCellColor();
+        firstCell.setCellColor(lastCell.getCellColor());
+        lastCell.setCellColor(headCellColor);
+        firstCell.draw();
+        lastCell.draw();
     }
 }
 
