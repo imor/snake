@@ -175,33 +175,47 @@ function Snake(position, direction, stepsPerSecond) {
         this._timeSinceLastUpdate = this._timeSinceLastUpdate + lag;
 
         if (this._timeSinceLastUpdate >= this._updateInterval) {
-
-            //Set new direction
-            var direction = this._directionBuffer.shift();
-            if (direction) {
-                var firstSegment = this._segments[0];
-                var firstCell = firstSegment.removeCellFromFront();
-                var newSegment = new Segment(firstCell.getPosition(), direction, 0);
-                newSegment.addCellToFront(firstCell);
-                this._segments.unshift(newSegment);
-            }
-
-            //Move one step forward
-            var firstSegment = this._segments[0];
-            var firstCell = firstSegment.getCell(0);
-            var lastSegment = this._segments[this._segments.length - 1];
-            var lastCell = lastSegment.removeCellFromBack();
-
-            var position = getAdjacentCellPosition(firstCell, firstSegment.getDirection());
-            lastCell.setPosition(position);
-            firstSegment.addCellToFront(lastCell);
-            lastCell.draw();
-
-            if (lastSegment.getLength() === 0) {
-                this._segments.pop();
-            }
-
+            this._updateDirection();
+            this._moveOneStep();
+            //this._elongateOneStep();
             this._timeSinceLastUpdate = 0;
         }
     };
+
+    Snake.prototype._updateDirection = function() {
+        //Set new direction
+        var direction = this._directionBuffer.shift();
+        if (direction) {
+            var firstSegment = this._segments[0];
+            var firstCell = firstSegment.removeCellFromFront();
+            var newSegment = new Segment(firstCell.getPosition(), direction, 0);
+            newSegment.addCellToFront(firstCell);
+            this._segments.unshift(newSegment);
+        }
+    }
+
+    Snake.prototype._moveOneStep = function() {
+        //Move one step forward
+        var firstSegment = this._segments[0];
+        var firstCell = firstSegment.getCell(0);
+        var lastSegment = this._segments[this._segments.length - 1];
+        var lastCell = lastSegment.removeCellFromBack();
+
+        var position = getAdjacentCellPosition(firstCell, firstSegment.getDirection());
+        lastCell.setPosition(position);
+        firstSegment.addCellToFront(lastCell);
+        lastCell.draw();
+
+        if (lastSegment.getLength() === 0) {
+            this._segments.pop();
+        }
+    }
+
+    Snake.prototype._elongateOneStep = function() {
+        var lastSegment = this._segments[this._segments.length - 1];
+        var lastCell = lastSegment.getCell(lastSegment.getLength() - 1);
+        var newCell = new Cell(getAdjacentCellPosition(lastCell, getOppositeDirection(lastSegment.getDirection())), lastCell.getSize());
+        newCell.draw();
+        lastSegment.addCellToBack(newCell);
+    }
 }

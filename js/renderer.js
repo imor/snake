@@ -8,7 +8,7 @@ var renderer = PIXI.autoDetectRenderer(400, 400);
 document.body.appendChild(renderer.view);
 
 var snake = new Snake(new Point(60, 10), RIGHT, 5);
-var world = new World(Date.now());
+var world = new World();
 world.addEntity(snake);
 world.draw();
 

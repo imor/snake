@@ -1,9 +1,9 @@
-function World(startTime) {
+function World() {
     var _entities = [];
-    var _lastUpdateTime = startTime;
+    var _lastUpdateTime = Date.now();
 
     var listener = new window.keypress.Listener();
-    //HACK:Assuming that _entities[0] is always snake. What happens when ther are more objects in the world
+    //HACK:Assuming that _entities[0] is always snake. What happens when there are more objects in the world
     listener.simple_combo("up", function() {
         _entities[0].setDirection(UP);
     });
