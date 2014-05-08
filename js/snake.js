@@ -43,7 +43,7 @@ function Cell(position, size, cellColor, borderColor, borderWidth) {
     };
 
     Cell.prototype.setPosition = function(newPosition) {
-        //HACK:I don't like setting position twice. Once in _position and once in _graph
+        //HACK:I don't like setting position twice. Once in _position and once in _graphics
         this._position = newPosition;
         this._graphics.position.x = newPosition.getX();
         this._graphics.position.y = newPosition.getY();
@@ -98,16 +98,12 @@ function Point(x, y) {
 
 function Segment(position, direction, numberOfCells) {
     this._direction = direction;
-    var headCell = new Cell(position, 10, 0x949494);
+    var size = 10;
     this._cells = [];
-    this._cells.push(headCell);
-    var position = headCell.getPosition();
-    var size = headCell.getSize();
-    var currentCell = headCell;
-    for (var i = 1;i < numberOfCells;i++) {
-        position = getAdjacentCellPosition(currentCell, getOppositeDirection(direction));
-        currentCell = new Cell(position, size);
+    for (var i = 0;i < numberOfCells;i++) {
+        var currentCell = new Cell(position, size);
         this._cells.push(currentCell);
+        position = getAdjacentCellPosition(currentCell, getOppositeDirection(direction));
     }
 
     Segment.prototype.addCellToFront = function(cell) {
@@ -148,14 +144,16 @@ function Segment(position, direction, numberOfCells) {
     }
 }
 
-function Snake(stepsPerSecond) {
+function Snake(position, direction, stepsPerSecond) {
     this._segments = [];
     this._updateInterval = 1000 / stepsPerSecond;
     this._timeSinceLastUpdate = 0;
+    this._direction = direction;
+    this._directionBuffer = []
+    this._inputBufferSize = 2;
 
-    Snake.prototype.addSegment = function(segment) {
-        this._segments.push(segment);
-    }
+    var segment = new Segment(position, direction, 3);
+    this._segments.push(segment);
 
     Snake.prototype.draw = function() {
         this._segments.forEach(function(segment) {
@@ -163,15 +161,37 @@ function Snake(stepsPerSecond) {
         });
     }
 
+    Snake.prototype.setDirection = function(newDirection) {
+        //Only allow turning left or right not forward or backward
+        if (this._direction != newDirection &&
+            getOppositeDirection(this._direction) != newDirection &&
+            this._directionBuffer.length <= this._inputBufferSize) {
+            this._direction = newDirection;
+            this._directionBuffer.push(newDirection);
+        }
+    };
+
     Snake.prototype.update = function(lag) {
         this._timeSinceLastUpdate = this._timeSinceLastUpdate + lag;
 
         if (this._timeSinceLastUpdate >= this._updateInterval) {
 
+            //Set new direction
+            var direction = this._directionBuffer.shift();
+            if (direction) {
+                var firstSegment = this._segments[0];
+                var firstCell = firstSegment.removeCellFromFront();
+                var newSegment = new Segment(firstCell.getPosition(), direction, 0);
+                newSegment.addCellToFront(firstCell);
+                this._segments.unshift(newSegment);
+            }
+
+            //Move one step forward
             var firstSegment = this._segments[0];
+            var firstCell = firstSegment.getCell(0);
             var lastSegment = this._segments[this._segments.length - 1];
             var lastCell = lastSegment.removeCellFromBack();
-            var firstCell = firstSegment.getCell(0);
+
             var position = getAdjacentCellPosition(firstCell, firstSegment.getDirection());
             lastCell.setPosition(position);
             firstSegment.addCellToFront(lastCell);

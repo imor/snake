@@ -2,6 +2,21 @@ function World(startTime) {
     var _entities = [];
     var _lastUpdateTime = startTime;
 
+    var listener = new window.keypress.Listener();
+    //HACK:Assuming that _entities[0] is always snake. What happens when ther are more objects in the world
+    listener.simple_combo("up", function() {
+        _entities[0].setDirection(UP);
+    });
+    listener.simple_combo("right", function() {
+        _entities[0].setDirection(RIGHT);
+    });
+    listener.simple_combo("down", function() {
+        _entities[0].setDirection(DOWN);
+    });
+    listener.simple_combo("left", function() {
+        _entities[0].setDirection(LEFT);
+    });
+
     World.prototype.addEntity = function(entity) {
         _entities.push(entity);
     }
