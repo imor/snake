@@ -154,6 +154,21 @@ function Snake(position, direction, stepsPerSecond) {
 
     var segment = new Segment(position, direction, 3);
     this._segments.push(segment);
+    var snake = this;
+
+    var listener = new window.keypress.Listener();
+    listener.simple_combo("up", function() {
+        snake.setDirection(UP);
+    });
+    listener.simple_combo("right", function() {
+        snake.setDirection(RIGHT);
+    });
+    listener.simple_combo("down", function() {
+        snake.setDirection(DOWN);
+    });
+    listener.simple_combo("left", function() {
+        snake.setDirection(LEFT);
+    });
 
     Snake.prototype.draw = function() {
         this._segments.forEach(function(segment) {
