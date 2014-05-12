@@ -1,39 +1,9 @@
-var UP = 1;
-var RIGHT = 2;
-var DOWN = 3;
-var LEFT = 4;
-
-function getAdjacentCellPosition(cell, direction) {
-    var size = cell.getSize();
-    var position = cell.getPosition();
-    if (direction == UP) {
-        return new Point(position.getX(), position.getY() - size);
-    } else if (direction == RIGHT) {
-        return new Point(position.getX() + size, position.getY());
-    } else if (direction == DOWN) {
-        return new Point(position.getX(), position.getY() + size);
-    } else if (direction == LEFT) {
-        return new Point(position.getX() - size, position.getY());
-    }
-}
-
-function getOppositeDirection(direction) {
-    if (direction == UP) {
-        return DOWN;
-    } else if (direction == RIGHT) {
-        return LEFT;
-    } else if (direction == DOWN) {
-        return UP;
-    } else if (direction == LEFT) {
-        return RIGHT;
-    }
-}
-
-function Cell(position, size, cellColor, borderColor, borderWidth) {
+function Cell(position, size, cellType, cellColor, borderColor, borderWidth) {
     this._graphics = new PIXI.Graphics();
     stage.addChild(this._graphics);
     this._position = position;
     this._size = size;
+    this._cellType = cellType;
     this._cellColor = cellColor || 0xd4d4d4;
     this._borderColor = borderColor || 0xffffff;
     this._borderWidth = borderWidth || 1;
@@ -44,9 +14,11 @@ function Cell(position, size, cellColor, borderColor, borderWidth) {
 
     Cell.prototype.setPosition = function(newPosition) {
         //HACK:I don't like setting position twice. Once in _position and once in _graphics
+        removeCellOnGrid(this);
         this._position = newPosition;
         this._graphics.position.x = newPosition.getX();
         this._graphics.position.y = newPosition.getY();
+        setCellOnGrid(this);
     };
 
     Cell.prototype.getSize = function() {
@@ -79,8 +51,18 @@ function Cell(position, size, cellColor, borderColor, borderWidth) {
         this._graphics.position.y = this._position.getY();
     }
 
+    Cell.prototype.destroy = function() {
+        this._graphics.clear();
+    }
+
     Cell.prototype.update = function(lag) {
     }
+
+    Cell.prototype.getCellType = function() {
+        return this._cellType;
+    }
+
+    setCellOnGrid(this);
 }
 
 function Point(x, y) {
@@ -98,10 +80,9 @@ function Point(x, y) {
 
 function Segment(position, direction, numberOfCells) {
     this._direction = direction;
-    var size = 10;
     this._cells = [];
     for (var i = 0;i < numberOfCells;i++) {
-        var currentCell = new Cell(position, size);
+        var currentCell = new Cell(position, CELL_SIZE, SNAKE);
         this._cells.push(currentCell);
         position = getAdjacentCellPosition(currentCell, getOppositeDirection(direction));
     }
@@ -192,7 +173,6 @@ function Snake(position, direction, stepsPerSecond) {
         if (this._timeSinceLastUpdate >= this._updateInterval) {
             this._updateDirection();
             this._moveOneStep();
-            //this._elongateOneStep();
             this._timeSinceLastUpdate = 0;
         }
     };
@@ -214,23 +194,34 @@ function Snake(position, direction, stepsPerSecond) {
         var firstSegment = this._segments[0];
         var firstCell = firstSegment.getCell(0);
         var lastSegment = this._segments[this._segments.length - 1];
-        var lastCell = lastSegment.removeCellFromBack();
 
         var position = getAdjacentCellPosition(firstCell, firstSegment.getDirection());
-        lastCell.setPosition(position);
-        firstSegment.addCellToFront(lastCell);
-        lastCell.draw();
+        var cell = getCellOnGrid(position);
+        if (cell && cell.getCellType() === FOOD) {
+            //TODO:Remove food from world
+            cell.destroy();
+            removeCellOnGrid(cell);
+            this._elongateOneStep();
+            var food = generateFood();
+            food.draw();
+        } else {
+            var lastCell = lastSegment.removeCellFromBack();
+            lastCell.setPosition(position);
+            firstSegment.addCellToFront(lastCell);
+            lastCell.draw();
 
-        if (lastSegment.getLength() === 0) {
-            this._segments.pop();
+            if (lastSegment.getLength() === 0) {
+                this._segments.pop();
+            }
         }
     }
 
     Snake.prototype._elongateOneStep = function() {
-        var lastSegment = this._segments[this._segments.length - 1];
-        var lastCell = lastSegment.getCell(lastSegment.getLength() - 1);
-        var newCell = new Cell(getAdjacentCellPosition(lastCell, getOppositeDirection(lastSegment.getDirection())), lastCell.getSize());
+        var firstSegment = this._segments[0];
+        var firstCell = firstSegment.getCell(0);
+        var position = getAdjacentCellPosition(firstCell, firstSegment.getDirection());
+        var newCell = new Cell(position, CELL_SIZE, SNAKE);
+        firstSegment.addCellToFront(newCell);
         newCell.draw();
-        lastSegment.addCellToBack(newCell);
     }
 }
