@@ -121,6 +121,12 @@ function Segment(position, direction, numberOfCells) {
         });
     }
 
+    Segment.prototype.destroy = function() {
+        this._cells.forEach(function(cell) {
+            cell.destroy();
+        });
+    }
+
     Segment.prototype.update = function(lag) {
     }
 }
@@ -154,6 +160,12 @@ function Snake(position, direction, stepsPerSecond) {
     Snake.prototype.draw = function() {
         this._segments.forEach(function(segment) {
             segment.draw();
+        });
+    }
+
+    Snake.prototype.destroy = function() {
+        this._segments.forEach(function(segment) {
+            segment.destroy();
         });
     }
 
@@ -202,8 +214,11 @@ function Snake(position, direction, stepsPerSecond) {
             cell.destroy();
             removeCellOnGrid(cell);
             this._elongateOneStep();
-            var food = generateFood();
+            food = generateFood();
             food.draw();
+        }
+        else if (cell && (cell.getCellType() === SNAKE || cell.getCellType() === WALL)) {
+            reinit();
         } else {
             var lastCell = lastSegment.removeCellFromBack();
             lastCell.setPosition(position);

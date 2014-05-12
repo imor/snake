@@ -26,4 +26,10 @@ function World() {
             entity.draw();
         });
     }
+
+    World.prototype.destroy = function() {
+        _entities.forEach(function (entity) {
+            entity.destroy();
+        });
+    }
 }

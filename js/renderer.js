@@ -8,13 +8,28 @@ var renderer = PIXI.autoDetectRenderer(renderer_size, renderer_size);
 // add the renderer view element to the DOM
 document.body.appendChild(renderer.view);
 
-var snake = new Snake(new Point(30, 0), RIGHT, 10);
-var world = new World();
-var food = generateFood();
-world.addEntity(snake);
-world.addEntity(food);
-world.draw();
+var snake;
+var world;
+var food;
 
+function init() {
+    snake = new Snake(new Point(30, 0), RIGHT, 5);
+    world = new World();
+    food = generateFood();
+    world.addEntity(snake);
+    world.addEntity(food);
+    world.draw();
+}
+
+function reinit() {
+    world.destroy();
+    //TODO:make food part of the world
+    food.destroy();
+    gridInit();
+    init();
+}
+
+init();
 requestAnimFrame(animate);
 
 function animate() {

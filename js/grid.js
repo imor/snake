@@ -1,4 +1,4 @@
-var NUMBER_OF_CELLS = 10;
+var NUMBER_OF_CELLS = 40;
 var CELL_SIZE = 10;
 
 //directions
@@ -13,14 +13,19 @@ var SNAKE = 1;
 var WALL = 2;
 var FOOD = 3;
 
-var positionToCell = new Array(NUMBER_OF_CELLS);
-for (var i = 0;i < NUMBER_OF_CELLS;i++) {
-    var arr = new Array(NUMBER_OF_CELLS);
-    positionToCell[i] = arr;
-    for (var j = 0;j < NUMBER_OF_CELLS;j++) {
-        arr[j] = null;
+var positionToCell;
+function gridInit() {
+    positionToCell = new Array(NUMBER_OF_CELLS);
+    for (var i = 0;i < NUMBER_OF_CELLS;i++) {
+        var arr = new Array(NUMBER_OF_CELLS);
+        positionToCell[i] = arr;
+        for (var j = 0;j < NUMBER_OF_CELLS;j++) {
+            arr[j] = null;
+        }
     }
 }
+
+gridInit();
 
 function getAdjacentCellPosition(cell, direction) {
     var size = cell.getSize();
@@ -84,9 +89,6 @@ function generateFood() {
         return new Cell(randomPoint, CELL_SIZE, FOOD, 0x141414);
     }
 }
-
-var foodX = 0;
-var foodY = 0;
 
 function setCellOnGrid(cell) {
     var position = cell.getPosition();
