@@ -9,10 +9,10 @@ var DIRECTION = {
 };
 
 var GRID = (function() {
-    var grid = {};
+    var my = {};
     var positionToCell;
 
-    grid.init = function () {
+    my.init = function () {
         positionToCell = new Array(NUMBER_OF_CELLS);
         for (var i = 0;i < NUMBER_OF_CELLS;i++) {
             var arr = new Array(NUMBER_OF_CELLS);
@@ -23,7 +23,7 @@ var GRID = (function() {
         }
     };
 
-    grid.getAdjacentCellPosition = function(cell, direction) {
+    my.getAdjacentCellPosition = function(cell, direction) {
         var size = cell.getSize();
         var position = cell.getPosition();
         var newX;
@@ -55,7 +55,7 @@ var GRID = (function() {
         }
     };
 
-    grid.getOppositeDirection = function(direction) {
+    my.getOppositeDirection = function(direction) {
         if (direction == DIRECTION.UP) {
             return DIRECTION.DOWN;
         } else if (direction == DIRECTION.RIGHT) {
@@ -67,25 +67,25 @@ var GRID = (function() {
         }
     };
 
-    grid.setCell = function(cell) {
+    my.setCell = function(cell) {
         var position = cell.getPosition();
         var i = position.getX() / CELL_SIZE;
         var j = position.getY() / CELL_SIZE;
         positionToCell[i][j] = cell;
     };
 
-    grid.removeCell = function(cell) {
+    my.removeCell = function(cell) {
         var position = cell.getPosition();
         var i = position.getX() / CELL_SIZE;
         var j = position.getY() / CELL_SIZE;
         positionToCell[i][j] = null;
     };
 
-    grid.getCell = function(position) {
+    my.getCell = function(position) {
         var i = position.getX() / CELL_SIZE;
         var j = position.getY() / CELL_SIZE;
         return positionToCell[i][j];
     };
 
-    return grid;
+    return my;
 }());

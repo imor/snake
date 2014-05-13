@@ -81,11 +81,12 @@ function Snake(position, direction, stepsPerSecond) {
             cell.destroy();
             GRID.removeCell(cell);
             this._elongateOneStep();
-            food = generateFood();
+            var food = FOOD.generate();
             food.draw();
+            world.addEntity("food", food);
         }
         else if (cell && (cell.getCellType() === CELL_TYPE.SNAKE || cell.getCellType() === CELL_TYPE.WALL)) {
-            init();
+            restart();
         } else {
             var lastCell = lastSegment.removeCellFromBack();
             lastCell.setPosition(position);
