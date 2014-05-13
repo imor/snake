@@ -1,111 +1,91 @@
 var NUMBER_OF_CELLS = 40;
 var CELL_SIZE = 10;
 
-//directions
-var UP = 1;
-var RIGHT = 2;
-var DOWN = 3;
-var LEFT = 4;
+var DIRECTION = {
+    UP: 1,
+    RIGHT: 2,
+    DOWN: 3,
+    LEFT: 4
+};
 
-//cell types
-var EMPTY = 0;
-var SNAKE = 1;
-var WALL = 2;
-var FOOD = 3;
+var GRID = (function() {
+    var grid = {};
+    var positionToCell;
 
-var positionToCell;
-function gridInit() {
-    positionToCell = new Array(NUMBER_OF_CELLS);
-    for (var i = 0;i < NUMBER_OF_CELLS;i++) {
-        var arr = new Array(NUMBER_OF_CELLS);
-        positionToCell[i] = arr;
-        for (var j = 0;j < NUMBER_OF_CELLS;j++) {
-            arr[j] = null;
+    grid.init = function () {
+        positionToCell = new Array(NUMBER_OF_CELLS);
+        for (var i = 0;i < NUMBER_OF_CELLS;i++) {
+            var arr = new Array(NUMBER_OF_CELLS);
+            positionToCell[i] = arr;
+            for (var j = 0;j < NUMBER_OF_CELLS;j++) {
+                arr[j] = null;
+            }
         }
-    }
-}
+    };
 
-gridInit();
-
-function getAdjacentCellPosition(cell, direction) {
-    var size = cell.getSize();
-    var position = cell.getPosition();
-    if (direction == UP) {
-        var newY = position.getY() - size;
-        if (newY < 0) {
-            newY = newY + NUMBER_OF_CELLS * CELL_SIZE;
+    grid.getAdjacentCellPosition = function(cell, direction) {
+        var size = cell.getSize();
+        var position = cell.getPosition();
+        var newX;
+        var newY;
+        if (direction == DIRECTION.UP) {
+            newY = position.getY() - size;
+            if (newY < 0) {
+                newY = newY + NUMBER_OF_CELLS * CELL_SIZE;
+            }
+            return new Point(position.getX(), newY);
+        } else if (direction == DIRECTION.RIGHT) {
+            newX = position.getX() + size;
+            if (newX >= NUMBER_OF_CELLS * CELL_SIZE) {
+                newX = newX - NUMBER_OF_CELLS * CELL_SIZE;
+            }
+            return new Point(newX, position.getY());
+        } else if (direction == DIRECTION.DOWN) {
+            newY = position.getY() + size;
+            if (newY >= NUMBER_OF_CELLS * CELL_SIZE) {
+                newY = newY - NUMBER_OF_CELLS * CELL_SIZE;
+            }
+            return new Point(position.getX(), newY);
+        } else if (direction == DIRECTION.LEFT) {
+            newX = position.getX() - size;
+            if (newX < 0) {
+                newX = newX + NUMBER_OF_CELLS * CELL_SIZE;
+            }
+            return new Point(newX, position.getY());
         }
-        return new Point(position.getX(), newY);
-    } else if (direction == RIGHT) {
-        var newX = position.getX() + size;
-        if (newX >= NUMBER_OF_CELLS * CELL_SIZE) {
-            newX = newX - NUMBER_OF_CELLS * CELL_SIZE;
+    };
+
+    grid.getOppositeDirection = function(direction) {
+        if (direction == DIRECTION.UP) {
+            return DIRECTION.DOWN;
+        } else if (direction == DIRECTION.RIGHT) {
+            return DIRECTION.LEFT;
+        } else if (direction == DIRECTION.DOWN) {
+            return DIRECTION.UP;
+        } else if (direction == DIRECTION.LEFT) {
+            return DIRECTION.RIGHT;
         }
-        return new Point(newX, position.getY());
-    } else if (direction == DOWN) {
-        var newY = position.getY() + size;
-        if (newY >= NUMBER_OF_CELLS * CELL_SIZE) {
-            newY = newY - NUMBER_OF_CELLS * CELL_SIZE;
-        }
-        return new Point(position.getX(), newY);
-    } else if (direction == LEFT) {
-        var newX = position.getX() - size;
-        if (newX < 0) {
-            newX = newX + NUMBER_OF_CELLS * CELL_SIZE;
-        }
-        return new Point(newX, position.getY());
-    }
-}
+    };
 
-function getOppositeDirection(direction) {
-    if (direction == UP) {
-        return DOWN;
-    } else if (direction == RIGHT) {
-        return LEFT;
-    } else if (direction == DOWN) {
-        return UP;
-    } else if (direction == LEFT) {
-        return RIGHT;
-    }
-}
+    grid.setCell = function(cell) {
+        var position = cell.getPosition();
+        var i = position.getX() / CELL_SIZE;
+        var j = position.getY() / CELL_SIZE;
+        positionToCell[i][j] = cell;
+    };
 
-function generateRandomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+    grid.removeCell = function(cell) {
+        var position = cell.getPosition();
+        var i = position.getX() / CELL_SIZE;
+        var j = position.getY() / CELL_SIZE;
+        positionToCell[i][j] = null;
+    };
 
-function generateRandomPoint() {
-    return new Point(generateRandomInt(0, (NUMBER_OF_CELLS - 1)) * CELL_SIZE, generateRandomInt(0, (NUMBER_OF_CELLS - 1)) * CELL_SIZE);
-}
+    grid.getCell = function(position) {
+        var i = position.getX() / CELL_SIZE;
+        var j = position.getY() / CELL_SIZE;
+        return positionToCell[i][j];
+    };
 
-//TODO:Food should not be generated on top of the snake
-function generateFood() {
-
-    while (true) {
-        var randomPoint = generateRandomPoint();
-        var cell = getCellOnGrid(randomPoint);
-        if (cell && cell.getCellType() === SNAKE) {
-            continue;
-        }
-        return new Cell(randomPoint, CELL_SIZE, FOOD, 0x141414);
-    }
-}
-
-function setCellOnGrid(cell) {
-    var position = cell.getPosition();
-    var i = position.getX() / CELL_SIZE;
-    var j = position.getY() / CELL_SIZE;
-    positionToCell[i][j] = cell;
-}
-
-function removeCellOnGrid(cell) {
-    var position = cell.getPosition();
-    var i = position.getX() / CELL_SIZE;
-    var j = position.getY() / CELL_SIZE;
-    positionToCell[i][j] = null;
-}
-
-function getCellOnGrid(position) {
-    var i = position.getX() / CELL_SIZE;
-    var j = position.getY() / CELL_SIZE;
-    return positionToCell[i][j];
-}
+    return grid;
+}());
