@@ -1,19 +1,20 @@
 var INITIAL_SNAKE_LENGTH = 3;
 var INPUT_BUFFER_SIZE = 2;
 
-function Snake(upKey, rightKey, downKey, leftKey, startX, startY, direction) {
+function Snake(upKey, rightKey, downKey, leftKey, startX, startY, direction, spriteKey) {
     this.direction = direction;
     this.inputBuffer = [];
     this.snakeCells = [];
-    this.snakeSpeed = 5;
-    
+    this.snakeSpeed = 4;
+    this.spriteKey = spriteKey;
+
     var oppositeDirection = getOppositeDirection(direction);
     var nextPosition = {x:startX, y:startY};
     for (var i = 0;i < INITIAL_SNAKE_LENGTH;i++) {
-        this.snakeCells.push(game.add.sprite(nextPosition.x, nextPosition.y, 'cell'));
+        this.snakeCells.push(game.add.sprite(nextPosition.x, nextPosition.y, this.spriteKey));
         nextPosition = getAdjacentCellPosition(nextPosition.x, nextPosition.y, CELL_WIDTH, oppositeDirection);
     }
-    
+
     Snake.prototype.move = function() {
         var head = this.snakeCells[0];
         var newDirection = this.inputBuffer.shift();
@@ -22,7 +23,7 @@ function Snake(upKey, rightKey, downKey, leftKey, startX, startY, direction) {
         }
         var nextPosition = getAdjacentCellPosition(head.x, head.y, CELL_WIDTH, newDirection);
         if (isFoodLocation(nextPosition.x, nextPosition.y)) {
-            this.snakeCells.unshift(game.add.sprite(nextPosition.x, nextPosition.y, 'cell'));
+            this.snakeCells.unshift(game.add.sprite(nextPosition.x, nextPosition.y, this.spriteKey));
             var foodLocation = createFoodLocation();
             food.x = foodLocation.x;
             food.y = foodLocation.y;
@@ -37,7 +38,7 @@ function Snake(upKey, rightKey, downKey, leftKey, startX, startY, direction) {
         this.snakeCells.unshift(last);
         this.direction = newDirection;
     };
-    
+
     Snake.prototype.handleKeyPressed = function(keyPressedDirection) {
         var newDirection;
         var oldDirection = this.direction;
@@ -67,7 +68,7 @@ function Snake(upKey, rightKey, downKey, leftKey, startX, startY, direction) {
     Snake.prototype.onLeftArrowKeyPressed = function() {
         this.handleKeyPressed(DIRECTION.LEFT);
     };
-    
+
     Snake.prototype.isSnakeLocation = function(x, y) {
         var length = this.snakeCells.length;
         for (var i = 0;i < length;i++) {
@@ -78,14 +79,14 @@ function Snake(upKey, rightKey, downKey, leftKey, startX, startY, direction) {
         }
         return false;
     };
-    
+
     Snake.prototype.kill = function() {
         var length = this.snakeCells.length;
         for (var i = 0;i < length;i++) {
             this.snakeCells[i].kill();
         }
     };
-    
+
     game.time.events.loop(Phaser.Timer.SECOND / this.snakeSpeed, this.move, this);
 
     this.upArrowKey = game.input.keyboard.addKey(upKey);

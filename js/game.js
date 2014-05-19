@@ -30,16 +30,18 @@ var game = new Phaser.Game(GAME_WIDTH, GAME_WIDTH, Phaser.AUTO, 'snake');
 
 var main = {
     preload: function() {
-        game.load.image('cell', 'images/cell.png');
+        game.load.image('player1Cell', 'images/redCell.png');
+        game.load.image('player2Cell', 'images/blueCell.png');
+        game.load.image('foodCell', 'images/greenCell.png');
     },
 
     create: function() {
-        game.stage.backgroundColor = '#ffffff';
+        game.stage.backgroundColor = '#ffe88a';
 
-        snakes['player1'] = new Snake(Phaser.Keyboard.UP, Phaser.Keyboard.RIGHT, Phaser.Keyboard.DOWN, Phaser.Keyboard.LEFT, 20, 0, DIRECTION.RIGHT, 'player1');
-        snakes['player2'] = new Snake(Phaser.Keyboard.W, Phaser.Keyboard.D, Phaser.Keyboard.S, Phaser.Keyboard.A, 370, 390, DIRECTION.LEFT, 'player2');
+        snakes['player1'] = new Snake(Phaser.Keyboard.UP, Phaser.Keyboard.RIGHT, Phaser.Keyboard.DOWN, Phaser.Keyboard.LEFT, 20, 0, DIRECTION.RIGHT, 'player1Cell');
+        snakes['player2Cell'] = new Snake(Phaser.Keyboard.W, Phaser.Keyboard.D, Phaser.Keyboard.S, Phaser.Keyboard.A, 370, 390, DIRECTION.LEFT, 'player2Cell');
         var foodLocation = createFoodLocation();
-        food = game.add.sprite(foodLocation.x, foodLocation.y, 'cell');
+        food = game.add.sprite(foodLocation.x, foodLocation.y, 'foodCell');
     },
 
     update: function() {
