@@ -4,7 +4,7 @@ var initialSnakeLength = 3;
 var cellWidth = 10;
 var numberOfsnakeCells = 40;
 var gameWidth = numberOfsnakeCells * cellWidth;
-var snakeSpeed = 0.5;
+var snakeSpeed = 5;
 var game = new Phaser.Game(gameWidth, gameWidth, Phaser.AUTO, 'snake', { preload: preload, create: create, update: update });
 
 var DIRECTION = {
@@ -15,7 +15,12 @@ var DIRECTION = {
 };
 
 var direction = DIRECTION.RIGHT;
-var arrowKeys;
+var inputBuffer = [];
+var inputBufferSize = 2;
+var upArrowKey;
+var rightArrowKey;
+var downArrowKey;
+var leftArrowKey;
 
 function getAdjacentCellPosition(x, y, size, direction) {
     var newX;
@@ -50,10 +55,15 @@ function getAdjacentCellPosition(x, y, size, direction) {
 function moveSnake() {
     var head = snakeCells[0];
     var last = snakeCells.pop();
-    var nextPosition = getAdjacentCellPosition(head.x, head.y, cellWidth, direction);
+    var newDirection = inputBuffer.shift();
+    if (!newDirection) {
+        newDirection = direction;
+    }
+    var nextPosition = getAdjacentCellPosition(head.x, head.y, cellWidth, newDirection);
     last.x = nextPosition.x;
     last.y = nextPosition.y;
     snakeCells.unshift(last);
+    direction = newDirection;
 }
 
 function preload() {
@@ -67,18 +77,74 @@ function create() {
         snakeCells.push(game.add.sprite(i * cellWidth, 0, 'cell'));
     }
     
-    game.time.events.loop(Phaser.Timer.SECOND * snakeSpeed, moveSnake, this);
-    arrowKeys = game.input.keyboard.createCursorKeys();
+    game.time.events.loop(Phaser.Timer.SECOND / snakeSpeed, moveSnake, this);
+
+    upArrowKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
+    upArrowKey.onDown.add(onUpArrowKeyPressed, this);
+    rightArrowKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
+    rightArrowKey.onDown.add(onRightArrowKeyPressed, this);
+    downArrowKey = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
+    downArrowKey.onDown.add(onDownArrowKeyPressed, this);
+    leftArrowKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
+    leftArrowKey.onDown.add(onLeftArrowKeyPressed, this);
 }
 
 function update() {
-    if (arrowKeys.right.isDown && direction != DIRECTION.LEFT) {
-        direction = DIRECTION.RIGHT;
-    } else if (arrowKeys.left.isDown && direction != DIRECTION.RIGHT) {
-        direction = DIRECTION.LEFT;
-    } else if (arrowKeys.up.isDown && direction != DIRECTION.DOWN) {
-        direction = DIRECTION.UP;
-    } else if (arrowKeys.down.isDown && direction != DIRECTION.UP) {
-        direction = DIRECTION.DOWN;
+
+}
+
+function onUpArrowKeyPressed() {
+    var newDirection;
+    var oldDirection = direction;
+    if (inputBuffer.length > 0) {
+        oldDirection = inputBuffer[inputBuffer.length - 1];
+    }
+    if (oldDirection != DIRECTION.DOWN) {
+        newDirection = DIRECTION.UP;
+    }
+    if (newDirection && inputBuffer.length < inputBufferSize) {
+        inputBuffer.push(newDirection);
+    }
+}
+
+function onRightArrowKeyPressed() {
+    var newDirection;
+    var oldDirection = direction;
+    if (inputBuffer.length > 0) {
+        oldDirection = inputBuffer[inputBuffer.length - 1];
+    }
+    if (oldDirection != DIRECTION.LEFT) {
+        newDirection = DIRECTION.RIGHT;
+    }
+    if (newDirection && inputBuffer.length < inputBufferSize) {
+        inputBuffer.push(newDirection);
+    }
+}
+
+function onDownArrowKeyPressed() {
+    var newDirection;
+    var oldDirection = direction;
+    if (inputBuffer.length > 0) {
+        oldDirection = inputBuffer[inputBuffer.length - 1];
+    }
+    if (oldDirection != DIRECTION.UP) {
+        newDirection = DIRECTION.DOWN;
+    }
+    if (newDirection && inputBuffer.length < inputBufferSize) {
+        inputBuffer.push(newDirection);
+    }
+}
+
+function onLeftArrowKeyPressed() {
+    var newDirection;
+    var oldDirection = direction;
+    if (inputBuffer.length > 0) {
+        oldDirection = inputBuffer[inputBuffer.length - 1];
+    }
+    if (oldDirection != DIRECTION.RIGHT) {
+        newDirection = DIRECTION.LEFT;
+    }
+    if (newDirection && inputBuffer.length < inputBufferSize) {
+        inputBuffer.push(newDirection);
     }
 }
