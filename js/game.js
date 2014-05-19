@@ -65,13 +65,13 @@ function moveSnake() {
         var foodLocation = createFoodLocation();
         food.x = foodLocation.x;
         food.y = foodLocation.y;
-    } else {
-        var last = snakeCells.pop();
-        last.x = nextPosition.x;
-        last.y = nextPosition.y;
-        snakeCells.unshift(last);
-        direction = newDirection;
     }
+
+    var last = snakeCells.pop();
+    last.x = nextPosition.x;
+    last.y = nextPosition.y;
+    snakeCells.unshift(last);
+    direction = newDirection;
 }
 
 function preload() {
