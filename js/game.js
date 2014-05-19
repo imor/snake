@@ -13,12 +13,13 @@ var snakes;
 var food;
 
 function init() {
-    snakes = [];
+    snakes = {};
     game.state.start('main');
 }
 
 function restart() {
-    snakes.forEach(function(snake) {
+    Object.keys(snakes).forEach(function(key) {
+        var snake = snakes[key];
         snake.kill();
     });
     food.kill();
@@ -35,7 +36,8 @@ var main = {
     create: function() {
         game.stage.backgroundColor = '#ffffff';
 
-        snakes.push(new Snake());
+        snakes['player1'] = new Snake(Phaser.Keyboard.UP, Phaser.Keyboard.RIGHT, Phaser.Keyboard.DOWN, Phaser.Keyboard.LEFT, 20, 0, DIRECTION.RIGHT, 'player1');
+        snakes['player2'] = new Snake(Phaser.Keyboard.W, Phaser.Keyboard.D, Phaser.Keyboard.S, Phaser.Keyboard.A, 370, 390, DIRECTION.LEFT, 'player2');
         var foodLocation = createFoodLocation();
         food = game.add.sprite(foodLocation.x, foodLocation.y, 'cell');
     },
@@ -67,7 +69,8 @@ function isFoodLocation(x, y) {
 
 function isSnakeLocation(x, y) {
     var result = false;
-    snakes.forEach(function(snake) {
+    Object.keys(snakes).forEach(function(key) {
+        var snake = snakes[key];
         if (snake.isSnakeLocation(x, y)) {
             result = true;
         }

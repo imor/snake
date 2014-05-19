@@ -1,14 +1,17 @@
 var INITIAL_SNAKE_LENGTH = 3;
 var INPUT_BUFFER_SIZE = 2;
 
-function Snake() {
-    this.direction = DIRECTION.RIGHT;
+function Snake(upKey, rightKey, downKey, leftKey, startX, startY, direction) {
+    this.direction = direction;
     this.inputBuffer = [];
     this.snakeCells = [];
     this.snakeSpeed = 5;
     
-    for (var i = INITIAL_SNAKE_LENGTH - 1;i >= 0;--i) {
-        this.snakeCells.push(game.add.sprite(i * CELL_WIDTH, 0, 'cell'));
+    var oppositeDirection = getOppositeDirection(direction);
+    var nextPosition = {x:startX, y:startY};
+    for (var i = 0;i < INITIAL_SNAKE_LENGTH;i++) {
+        this.snakeCells.push(game.add.sprite(nextPosition.x, nextPosition.y, 'cell'));
+        nextPosition = getAdjacentCellPosition(nextPosition.x, nextPosition.y, CELL_WIDTH, oppositeDirection);
     }
     
     Snake.prototype.move = function() {
@@ -85,12 +88,12 @@ function Snake() {
     
     game.time.events.loop(Phaser.Timer.SECOND / this.snakeSpeed, this.move, this);
 
-    this.upArrowKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
+    this.upArrowKey = game.input.keyboard.addKey(upKey);
     this.upArrowKey.onDown.add(this.onUpArrowKeyPressed, this);
-    this.rightArrowKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
+    this.rightArrowKey = game.input.keyboard.addKey(rightKey);
     this.rightArrowKey.onDown.add(this.onRightArrowKeyPressed, this);
-    this.downArrowKey = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
+    this.downArrowKey = game.input.keyboard.addKey(downKey);
     this.downArrowKey.onDown.add(this.onDownArrowKeyPressed, this);
-    this.leftArrowKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
+    this.leftArrowKey = game.input.keyboard.addKey(leftKey);
     this.leftArrowKey.onDown.add(this.onLeftArrowKeyPressed, this);
 }
