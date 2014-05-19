@@ -1,12 +1,8 @@
-
-var snakeCells = [];
-var food;
-var initialSnakeLength = 3;
-var cellWidth = 10;
-var numberOfGameCells = 40;
-var gameWidth = numberOfGameCells * cellWidth;
-var snakeSpeed = 5;
-var game = new Phaser.Game(gameWidth, gameWidth, Phaser.AUTO, 'snake', { preload: preload, create: create, update: update });
+var INITIAL_SNAKE_LENGTH = 3;
+var CELL_WIDTH = 10;
+var NUMBER_OF_GAME_CELLS = 40;
+var GAME_WIDTH = NUMBER_OF_GAME_CELLS * CELL_WIDTH;
+var INPUT_BUFFER_SIZE = 2;
 
 var DIRECTION = {
     UP: 1,
@@ -15,13 +11,69 @@ var DIRECTION = {
     LEFT: 4
 };
 
-var direction = DIRECTION.RIGHT;
-var inputBuffer = [];
-var inputBufferSize = 2;
+var direction;
+var inputBuffer;
 var upArrowKey;
 var rightArrowKey;
 var downArrowKey;
 var leftArrowKey;
+var snakeCells;
+var food;
+var snakeSpeed ;
+
+function init() {
+    direction = DIRECTION.RIGHT;
+    inputBuffer = [];
+    snakeCells = [];
+    food;
+    snakeSpeed = 5;
+}
+
+function restart() {
+    var length = snakeCells.length;
+    for (var i = 0;i < length;i++) {
+        snakeCells[i].kill();
+    }
+    food.kill();
+    init();
+}
+
+init();
+
+var game = new Phaser.Game(GAME_WIDTH, GAME_WIDTH, Phaser.AUTO, 'snake');
+
+var main = {
+    preload: function() {
+        game.load.image('cell', 'images/cell.png');
+    },
+
+    create: function() {
+        game.stage.backgroundColor = '#ffffff';
+
+        for (var i = INITIAL_SNAKE_LENGTH - 1;i >= 0;--i) {
+            snakeCells.push(game.add.sprite(i * CELL_WIDTH, 0, 'cell'));
+        }
+        var foodLocation = createFoodLocation();
+        food = game.add.sprite(foodLocation.x, foodLocation.y, 'cell');
+
+        game.time.events.loop(Phaser.Timer.SECOND / snakeSpeed, moveSnake, this);
+
+        upArrowKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
+        upArrowKey.onDown.add(onUpArrowKeyPressed, this);
+        rightArrowKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
+        rightArrowKey.onDown.add(onRightArrowKeyPressed, this);
+        downArrowKey = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
+        downArrowKey.onDown.add(onDownArrowKeyPressed, this);
+        leftArrowKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
+        leftArrowKey.onDown.add(onLeftArrowKeyPressed, this);
+    },
+
+    update: function() {
+    }
+};
+
+game.state.add('main', main);
+game.state.start('main');
 
 function getAdjacentCellPosition(x, y, size, direction) {
     var newX;
@@ -29,25 +81,25 @@ function getAdjacentCellPosition(x, y, size, direction) {
     if (direction == DIRECTION.UP) {
         newY = y - size;
         if (newY < 0) {
-            newY = newY + gameWidth;
+            newY = newY + GAME_WIDTH;
         }
         return {x:x, y:newY};
     } else if (direction == DIRECTION.RIGHT) {
         newX = x + size;
-        if (newX >= gameWidth) {
-            newX = newX - gameWidth;
+        if (newX >= GAME_WIDTH) {
+            newX = newX - GAME_WIDTH;
         }
         return {x:newX, y:y};
     } else if (direction == DIRECTION.DOWN) {
         newY = y + size;
-        if (newY >= gameWidth) {
-            newY = newY - gameWidth;
+        if (newY >= GAME_WIDTH) {
+            newY = newY - GAME_WIDTH;
         }
         return {x:x, y:newY};
     } else if (direction == DIRECTION.LEFT) {
         newX = x - size;
         if (newX < 0) {
-            newX = newX + gameWidth;
+            newX = newX + GAME_WIDTH;
         }
         return {x:newX, y:y};
     }
@@ -59,12 +111,16 @@ function moveSnake() {
     if (!newDirection) {
         newDirection = direction;
     }
-    var nextPosition = getAdjacentCellPosition(head.x, head.y, cellWidth, newDirection);
+    var nextPosition = getAdjacentCellPosition(head.x, head.y, CELL_WIDTH, newDirection);
     if (isFoodLocation(nextPosition.x, nextPosition.y)) {
         snakeCells.unshift(game.add.sprite(nextPosition.x, nextPosition.y, 'cell'));
         var foodLocation = createFoodLocation();
         food.x = foodLocation.x;
         food.y = foodLocation.y;
+    } else if (isInsideSnake(nextPosition.x, nextPosition.y)) {
+        restart();
+        game.state.start('main');
+        return;
     }
 
     var last = snakeCells.pop();
@@ -74,40 +130,12 @@ function moveSnake() {
     direction = newDirection;
 }
 
-function preload() {
-    game.load.image('cell', 'images/cell.png');
-}
-
-function create() {
-    game.stage.backgroundColor = '#ffffff';
-    
-    for (var i = initialSnakeLength - 1;i >= 0;--i) {
-        snakeCells.push(game.add.sprite(i * cellWidth, 0, 'cell'));
-    }
-    var foodLocation = createFoodLocation();
-    food = game.add.sprite(foodLocation.x, foodLocation.y, 'cell');
-    
-    game.time.events.loop(Phaser.Timer.SECOND / snakeSpeed, moveSnake, this);
-
-    upArrowKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
-    upArrowKey.onDown.add(onUpArrowKeyPressed, this);
-    rightArrowKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
-    rightArrowKey.onDown.add(onRightArrowKeyPressed, this);
-    downArrowKey = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
-    downArrowKey.onDown.add(onDownArrowKeyPressed, this);
-    leftArrowKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
-    leftArrowKey.onDown.add(onLeftArrowKeyPressed, this);
-}
-
-function update() {
-}
-
 function createFoodLocation() {
-    var x = game.rnd.integerInRange(0, numberOfGameCells - 1) * cellWidth;
-    var y = game.rnd.integerInRange(0, numberOfGameCells - 1) * cellWidth;
+    var x = game.rnd.integerInRange(0, NUMBER_OF_GAME_CELLS - 1) * CELL_WIDTH;
+    var y = game.rnd.integerInRange(0, NUMBER_OF_GAME_CELLS - 1) * CELL_WIDTH;
     while (isInsideSnake(x, y)) {
-        x = game.rnd.integerInRange(0, numberOfGameCells - 1) * cellWidth;
-        y = game.rnd.integerInRange(0, numberOfGameCells - 1) * cellWidth;
+        x = game.rnd.integerInRange(0, NUMBER_OF_GAME_CELLS - 1) * CELL_WIDTH;
+        y = game.rnd.integerInRange(0, NUMBER_OF_GAME_CELLS - 1) * CELL_WIDTH;
     }
 
     return {x:x, y:y};
@@ -140,7 +168,7 @@ function onUpArrowKeyPressed() {
     if (oldDirection != DIRECTION.DOWN) {
         newDirection = DIRECTION.UP;
     }
-    if (newDirection && inputBuffer.length < inputBufferSize) {
+    if (newDirection && inputBuffer.length < INPUT_BUFFER_SIZE) {
         inputBuffer.push(newDirection);
     }
 }
@@ -154,7 +182,7 @@ function onRightArrowKeyPressed() {
     if (oldDirection != DIRECTION.LEFT) {
         newDirection = DIRECTION.RIGHT;
     }
-    if (newDirection && inputBuffer.length < inputBufferSize) {
+    if (newDirection && inputBuffer.length < INPUT_BUFFER_SIZE) {
         inputBuffer.push(newDirection);
     }
 }
@@ -168,7 +196,7 @@ function onDownArrowKeyPressed() {
     if (oldDirection != DIRECTION.UP) {
         newDirection = DIRECTION.DOWN;
     }
-    if (newDirection && inputBuffer.length < inputBufferSize) {
+    if (newDirection && inputBuffer.length < INPUT_BUFFER_SIZE) {
         inputBuffer.push(newDirection);
     }
 }
@@ -182,7 +210,7 @@ function onLeftArrowKeyPressed() {
     if (oldDirection != DIRECTION.RIGHT) {
         newDirection = DIRECTION.LEFT;
     }
-    if (newDirection && inputBuffer.length < inputBufferSize) {
+    if (newDirection && inputBuffer.length < INPUT_BUFFER_SIZE) {
         inputBuffer.push(newDirection);
     }
 }
