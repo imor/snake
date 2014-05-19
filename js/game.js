@@ -1,9 +1,10 @@
 
 var snakeCells = [];
+var food;
 var initialSnakeLength = 3;
 var cellWidth = 10;
-var numberOfsnakeCells = 40;
-var gameWidth = numberOfsnakeCells * cellWidth;
+var numberOfGameCells = 40;
+var gameWidth = numberOfGameCells * cellWidth;
 var snakeSpeed = 5;
 var game = new Phaser.Game(gameWidth, gameWidth, Phaser.AUTO, 'snake', { preload: preload, create: create, update: update });
 
@@ -54,16 +55,23 @@ function getAdjacentCellPosition(x, y, size, direction) {
 
 function moveSnake() {
     var head = snakeCells[0];
-    var last = snakeCells.pop();
     var newDirection = inputBuffer.shift();
     if (!newDirection) {
         newDirection = direction;
     }
     var nextPosition = getAdjacentCellPosition(head.x, head.y, cellWidth, newDirection);
-    last.x = nextPosition.x;
-    last.y = nextPosition.y;
-    snakeCells.unshift(last);
-    direction = newDirection;
+    if (isFoodLocation(nextPosition.x, nextPosition.y)) {
+        snakeCells.unshift(game.add.sprite(nextPosition.x, nextPosition.y, 'cell'));
+        var foodLocation = createFoodLocation();
+        food.x = foodLocation.x;
+        food.y = foodLocation.y;
+    } else {
+        var last = snakeCells.pop();
+        last.x = nextPosition.x;
+        last.y = nextPosition.y;
+        snakeCells.unshift(last);
+        direction = newDirection;
+    }
 }
 
 function preload() {
@@ -76,6 +84,8 @@ function create() {
     for (var i = initialSnakeLength - 1;i >= 0;--i) {
         snakeCells.push(game.add.sprite(i * cellWidth, 0, 'cell'));
     }
+    var foodLocation = createFoodLocation();
+    food = game.add.sprite(foodLocation.x, foodLocation.y, 'cell');
     
     game.time.events.loop(Phaser.Timer.SECOND / snakeSpeed, moveSnake, this);
 
@@ -90,7 +100,35 @@ function create() {
 }
 
 function update() {
+}
 
+function createFoodLocation() {
+    var x = game.rnd.integerInRange(0, numberOfGameCells - 1) * cellWidth;
+    var y = game.rnd.integerInRange(0, numberOfGameCells - 1) * cellWidth;
+    while (isInsideSnake(x, y)) {
+        x = game.rnd.integerInRange(0, numberOfGameCells - 1) * cellWidth;
+        y = game.rnd.integerInRange(0, numberOfGameCells - 1) * cellWidth;
+    }
+
+    return {x:x, y:y};
+}
+
+function isInsideSnake(x, y) {
+    var length = snakeCells.length;
+    for (var i = 0;i < length;i++) {
+        var cell = snakeCells[i];
+        if (cell.x === x && cell.y === y) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function isFoodLocation(x, y) {
+    if (food && food.x === x && food.y === y) {
+        return true;
+    }
+    return false;
 }
 
 function onUpArrowKeyPressed() {
