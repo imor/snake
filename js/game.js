@@ -1,6 +1,8 @@
 var CELL_WIDTH = 10;
 var NUMBER_OF_GAME_CELLS = 40;
 var GAME_WIDTH = NUMBER_OF_GAME_CELLS * CELL_WIDTH;
+var player1Score = 0;
+var player2Score = 0;
 
 var DIRECTION = {
     UP: 1,
@@ -27,6 +29,10 @@ function restart() {
 }
 
 var game = new Phaser.Game(GAME_WIDTH, GAME_WIDTH, Phaser.AUTO, 'snake');
+var player1Style;
+var player2Style;
+var p1Text;
+var p2Text;
 
 var main = {
     preload: function() {
@@ -38,10 +44,15 @@ var main = {
     create: function() {
         game.stage.backgroundColor = '#ffe88a';
 
-        snakes['player1'] = new Snake(Phaser.Keyboard.UP, Phaser.Keyboard.RIGHT, Phaser.Keyboard.DOWN, Phaser.Keyboard.LEFT, 20, 0, DIRECTION.RIGHT, 'player1Cell');
-        snakes['player2Cell'] = new Snake(Phaser.Keyboard.W, Phaser.Keyboard.D, Phaser.Keyboard.S, Phaser.Keyboard.A, 370, 390, DIRECTION.LEFT, 'player2Cell');
+        snakes['player1Cell'] = new Snake(Phaser.Keyboard.W, Phaser.Keyboard.D, Phaser.Keyboard.S, Phaser.Keyboard.A, 20, 0, DIRECTION.RIGHT, 'player1Cell');
+        snakes['player2'] = new Snake(Phaser.Keyboard.UP, Phaser.Keyboard.RIGHT, Phaser.Keyboard.DOWN, Phaser.Keyboard.LEFT, 370, 390, DIRECTION.LEFT, 'player2Cell');
         var foodLocation = createFoodLocation();
         food = game.add.sprite(foodLocation.x, foodLocation.y, 'foodCell');
+
+        player1Style = { font: "15px Arial", fill: "#ff0044", align: "center" };
+        player2Style = { font: "15px Arial", fill: "#4400ff", align: "center" };
+        p1Text = game.add.text(10, 10, "" + player1Score, player1Style);
+        p2Text = game.add.text(370, 10, "" + player2Score, player2Style);
     },
 
     update: function() {

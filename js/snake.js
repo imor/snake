@@ -5,7 +5,7 @@ function Snake(upKey, rightKey, downKey, leftKey, startX, startY, direction, spr
     this.direction = direction;
     this.inputBuffer = [];
     this.snakeCells = [];
-    this.snakeSpeed = 4;
+    this.snakeSpeed = 10;
     this.spriteKey = spriteKey;
 
     var oppositeDirection = getOppositeDirection(direction);
@@ -27,7 +27,21 @@ function Snake(upKey, rightKey, downKey, leftKey, startX, startY, direction, spr
             var foodLocation = createFoodLocation();
             food.x = foodLocation.x;
             food.y = foodLocation.y;
+            if (this.spriteKey === 'player1Cell') {
+                player1Score += 1;
+                p1Text.destroy();
+                p1Text = game.add.text(10, 10, "" + player1Score, player1Style);
+            } else {
+                player2Score += 1;
+                p2Text.destroy();
+                p2Text = game.add.text(370, 10, "" + player2Score, player2Style);
+            }
         } else if (isSnakeLocation(nextPosition.x, nextPosition.y)) {
+            if (this.spriteKey === 'player1Cell') {
+                player2Score += 5;
+            } else {
+                player1Score += 5;
+            }
             restart();
             return;
         }
