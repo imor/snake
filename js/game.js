@@ -22,17 +22,17 @@ function init() {
 function restart() {
     Object.keys(snakes).forEach(function(key) {
         var snake = snakes[key];
-        snake.kill();
+        snake.destroy();
     });
-    food.kill();
+    food.destroy();
     init();
 }
 
 var game = new Phaser.Game(GAME_WIDTH, GAME_WIDTH, Phaser.AUTO, 'snake');
 var player1Style;
 var player2Style;
-var p1Text;
-var p2Text;
+var player1ScoreText;
+var player2ScoreText;
 
 var main = {
     preload: function() {
@@ -51,8 +51,8 @@ var main = {
 
         player1Style = { font: "15px Arial", fill: "#ff0044", align: "center" };
         player2Style = { font: "15px Arial", fill: "#4400ff", align: "center" };
-        p1Text = game.add.text(10, 10, "" + player1Score, player1Style);
-        p2Text = game.add.text(370, 10, "" + player2Score, player2Style);
+        player1ScoreText = game.add.text(10, 10, "" + player1Score, player1Style);
+        player2ScoreText = game.add.text(370, 10, "" + player2Score, player2Style);
     },
 
     update: function() {
@@ -130,5 +130,25 @@ function getOppositeDirection(direction) {
         return DIRECTION.UP;
     } else if (direction === DIRECTION.LEFT) {
         return DIRECTION.RIGHT;
+    }
+}
+
+function snakeAteFood(snake) {
+    if (snake.spriteKey === 'player1Cell') {
+        player1Score += 1;
+        player1ScoreText.destroy();
+        player1ScoreText = game.add.text(10, 10, "" + player1Score, player1Style);
+    } else {
+        player2Score += 1;
+        player2ScoreText.destroy();
+        player2ScoreText = game.add.text(370, 10, "" + player2Score, player2Style);
+    }
+}
+
+function snakeDied(snake) {
+    if (snake.spriteKey === 'player1Cell') {
+        player2Score += 5;
+    } else {
+        player1Score += 5;
     }
 }
