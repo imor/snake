@@ -3,3 +3,11 @@ body {
     padding: 0;
     color: #c4c4c4;
 }
+
+#game {
+    width: 400px;
+    height: 400px;
+    margin: auto;
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+}

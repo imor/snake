@@ -28,7 +28,7 @@ function restart() {
     init();
 }
 
-var game = new Phaser.Game(GAME_WIDTH, GAME_WIDTH, Phaser.AUTO, 'snake');
+var game = new Phaser.Game(GAME_WIDTH, GAME_WIDTH, Phaser.AUTO, 'game');
 var player1Style;
 var player2Style;
 var player1ScoreText;
