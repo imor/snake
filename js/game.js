@@ -44,8 +44,9 @@ var main = {
     create: function() {
         game.stage.backgroundColor = '#ffe88a';
 
-        snakes['player1Cell'] = new Snake(Phaser.Keyboard.W, Phaser.Keyboard.D, Phaser.Keyboard.S, Phaser.Keyboard.A, 20, 0, DIRECTION.RIGHT, 'player1Cell');
-        snakes['player2'] = new Snake(Phaser.Keyboard.UP, Phaser.Keyboard.RIGHT, Phaser.Keyboard.DOWN, Phaser.Keyboard.LEFT, 370, 390, DIRECTION.LEFT, 'player2Cell');
+        //snakes['player1'] = new Snake(20, 0, DIRECTION.RIGHT, 'player1Cell', Phaser.Keyboard.W, Phaser.Keyboard.D, Phaser.Keyboard.S, Phaser.Keyboard.A);
+        snakes['player1'] = new Snake(20, 0, DIRECTION.RIGHT, 'player1Cell');
+        snakes['player2'] = new Snake(370, 390, DIRECTION.LEFT, 'player2Cell', Phaser.Keyboard.UP, Phaser.Keyboard.RIGHT, Phaser.Keyboard.DOWN, Phaser.Keyboard.LEFT);
         var foodLocation = createFoodLocation();
         food = game.add.sprite(foodLocation.x, foodLocation.y, 'foodCell');
 
@@ -131,6 +132,19 @@ function getOppositeDirection(direction) {
     } else if (direction === DIRECTION.LEFT) {
         return DIRECTION.RIGHT;
     }
+}
+
+function getDirectionFromTwoPositions(fromX, fromY, toX, toY) {
+    if (toX > fromX && toY === fromY) {
+        return DIRECTION.RIGHT;
+    } else if (toX < fromX && toY === fromY) {
+        return DIRECTION.LEFT;
+    } else if (toY > fromY && toX === fromX) {
+        return DIRECTION.DOWN;
+    } else if (toY < fromY && toX === fromX) {
+        return DIRECTION.UP;
+    }
+    return -1;
 }
 
 function snakeAteFood(snake) {

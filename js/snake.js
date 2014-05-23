@@ -1,7 +1,7 @@
 var INITIAL_SNAKE_LENGTH = 3;
 var INPUT_BUFFER_SIZE = 2;
 
-function Snake(upKey, rightKey, downKey, leftKey, startX, startY, direction, spriteKey) {
+function Snake(startX, startY, direction, spriteKey, upKey, rightKey, downKey, leftKey) {
     this.direction = direction;
     this.inputBuffer = [];
     this.snakeCells = [];
@@ -39,7 +39,38 @@ function Snake(upKey, rightKey, downKey, leftKey, startX, startY, direction, spr
         last.y = nextPosition.y;
         this.snakeCells.unshift(last);
         this.direction = newDirection;
+
+        if (this.isComputerController) {
+            this.findPath();
+        }
     };
+
+    Snake.prototype.findPath = function() {
+        var grid = new PF.Grid(NUMBER_OF_GAME_CELLS, NUMBER_OF_GAME_CELLS);
+        Object.keys(snakes).forEach(function(key) {
+            var snake = snakes[key];
+            var length = snake.snakeCells.length;
+            for (var i = 0;i < length;i++) {
+                var currentCell = snake.snakeCells[i];
+                var x = currentCell.x / CELL_WIDTH;
+                var y = currentCell.y / CELL_WIDTH;
+                grid.setWalkableAt(x, y, false);
+            }
+        });
+
+        var finder = new PF.AStarFinder();
+        var head = this.snakeCells[0];
+        var fromX = head.x / CELL_WIDTH;
+        var fromY = head.y / CELL_WIDTH;
+        var toX = food.x / CELL_WIDTH;
+        var toY = food.y / CELL_WIDTH;
+        var path = finder.findPath(fromX, fromY, toX, toY, grid);
+        if (path && path.length > 1) {
+            var next = path[1];
+            var nextDirection = getDirectionFromTwoPositions(fromX, fromY, next[0], next[1]);
+            this.handleKeyPressed(nextDirection);
+        }
+    }
 
     Snake.prototype.handleKeyPressed = function(keyPressedDirection) {
         var newDirection;
@@ -91,12 +122,18 @@ function Snake(upKey, rightKey, downKey, leftKey, startX, startY, direction, spr
 
     game.time.events.loop(Phaser.Timer.SECOND / this.snakeSpeed, this.move, this);
 
-    this.upArrowKey = game.input.keyboard.addKey(upKey);
-    this.upArrowKey.onDown.add(this.onUpArrowKeyPressed, this);
-    this.rightArrowKey = game.input.keyboard.addKey(rightKey);
-    this.rightArrowKey.onDown.add(this.onRightArrowKeyPressed, this);
-    this.downArrowKey = game.input.keyboard.addKey(downKey);
-    this.downArrowKey.onDown.add(this.onDownArrowKeyPressed, this);
-    this.leftArrowKey = game.input.keyboard.addKey(leftKey);
-    this.leftArrowKey.onDown.add(this.onLeftArrowKeyPressed, this);
+    if (upKey && rightKey && downKey && leftKey) {
+        this.upArrowKey = game.input.keyboard.addKey(upKey);
+        this.upArrowKey.onDown.add(this.onUpArrowKeyPressed, this);
+        this.rightArrowKey = game.input.keyboard.addKey(rightKey);
+        this.rightArrowKey.onDown.add(this.onRightArrowKeyPressed, this);
+        this.downArrowKey = game.input.keyboard.addKey(downKey);
+        this.downArrowKey.onDown.add(this.onDownArrowKeyPressed, this);
+        this.leftArrowKey = game.input.keyboard.addKey(leftKey);
+        this.leftArrowKey.onDown.add(this.onLeftArrowKeyPressed, this);
+
+        this.isComputerController = false;
+    } else {
+        this.isComputerController = true;
+    }
 }
