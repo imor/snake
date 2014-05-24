@@ -47,6 +47,7 @@ var main = {
         //snakes['player1'] = new Snake(20, 0, DIRECTION.RIGHT, 'player1Cell', Phaser.Keyboard.W, Phaser.Keyboard.D, Phaser.Keyboard.S, Phaser.Keyboard.A);
         snakes['player1'] = new Snake(20, 0, DIRECTION.RIGHT, 'player1Cell');
         snakes['player2'] = new Snake(370, 390, DIRECTION.LEFT, 'player2Cell', Phaser.Keyboard.UP, Phaser.Keyboard.RIGHT, Phaser.Keyboard.DOWN, Phaser.Keyboard.LEFT);
+        //snakes['player2'] = new Snake(370, 390, DIRECTION.LEFT, 'player2Cell');
         var foodLocation = createFoodLocation();
         food = game.add.sprite(foodLocation.x, foodLocation.y, 'foodCell');
 
@@ -160,9 +161,20 @@ function snakeAteFood(snake) {
 }
 
 function snakeDied(snake) {
+    snake.destroy();
     if (snake.spriteKey === 'player1Cell') {
-        player2Score += 5;
+        player2Score += 3;
+        player2ScoreText.destroy();
+        player2ScoreText = game.add.text(370, 10, "" + player2Score, player2Style);
+        //player2's timer is restarted because when a new snake is created its timer will get a little out
+        //of sync with the other snake. So we restart the other player's timer as well to sync them up.
+        snakes['player1'] = new Snake(20, 0, DIRECTION.RIGHT, 'player1Cell');
+        snakes['player2'].restartTimer();
     } else {
-        player1Score += 5;
+        player1Score += 3;
+        player1ScoreText.destroy();
+        player1ScoreText = game.add.text(10, 10, "" + player1Score, player1Style);
+        snakes['player2'] = new Snake(370, 390, DIRECTION.LEFT, 'player2Cell', Phaser.Keyboard.UP, Phaser.Keyboard.RIGHT, Phaser.Keyboard.DOWN, Phaser.Keyboard.LEFT);
+        snakes['player1'].restartTimer();
     }
 }

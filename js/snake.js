@@ -5,8 +5,12 @@ function Snake(startX, startY, direction, spriteKey, upKey, rightKey, downKey, l
     this.direction = direction;
     this.inputBuffer = [];
     this.snakeCells = [];
-    this.snakeSpeed = 10;
+    this.snakeSpeed = 5;
     this.spriteKey = spriteKey;
+    this.upKey = upKey;
+    this.rightKey = rightKey;
+    this.downKey = downKey;
+    this.leftKey = leftKey;
 
     var oppositeDirection = getOppositeDirection(direction);
     var nextPosition = {x:startX, y:startY};
@@ -30,7 +34,6 @@ function Snake(startX, startY, direction, spriteKey, upKey, rightKey, downKey, l
             snakeAteFood(this);
         } else if (isSnakeLocation(nextPosition.x, nextPosition.y)) {
             snakeDied(this);
-            restart();
             return;
         }
 
@@ -46,6 +49,10 @@ function Snake(startX, startY, direction, spriteKey, upKey, rightKey, downKey, l
     };
 
     Snake.prototype.findPath = function() {
+        var randomInt = game.rnd.integerInRange(1, 100);
+        if (randomInt >= 50) {
+            return;
+        }
         var grid = new PF.Grid(NUMBER_OF_GAME_CELLS, NUMBER_OF_GAME_CELLS);
         Object.keys(snakes).forEach(function(key) {
             var snake = snakes[key];
@@ -113,14 +120,32 @@ function Snake(startX, startY, direction, spriteKey, upKey, rightKey, downKey, l
         return false;
     };
 
+    Snake.prototype.restartTimer = function() {
+        game.time.events.remove(this.timer);
+        this.timer = game.time.events.loop(Phaser.Timer.SECOND / this.snakeSpeed, this.move, this);
+    };
+
     Snake.prototype.destroy = function() {
         var length = this.snakeCells.length;
         for (var i = 0;i < length;i++) {
             this.snakeCells[i].destroy();
         }
+        game.time.events.remove(this.timer);
+
+        if (!this.isComputerController) {
+            this.upArrowKey.onDown.remove(this.onUpArrowKeyPressed, this);
+            this.rightArrowKey.onDown.remove(this.onRightArrowKeyPressed, this);
+            this.downArrowKey.onDown.remove(this.onDownArrowKeyPressed, this);
+            this.leftArrowKey.onDown.remove(this.onLeftArrowKeyPressed, this);
+
+            game.input.keyboard.removeKey(this.upKey);
+            game.input.keyboard.removeKey(this.rightKey);
+            game.input.keyboard.removeKey(this.downKey);
+            game.input.keyboard.removeKey(this.leftKey);
+        }
     };
 
-    game.time.events.loop(Phaser.Timer.SECOND / this.snakeSpeed, this.move, this);
+    this.timer = game.time.events.loop(Phaser.Timer.SECOND / this.snakeSpeed, this.move, this);
 
     if (upKey && rightKey && downKey && leftKey) {
         this.upArrowKey = game.input.keyboard.addKey(upKey);
