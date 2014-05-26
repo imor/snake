@@ -1,3 +1,4 @@
+'use strict';
 var INITIAL_SNAKE_LENGTH = 3;
 var INPUT_BUFFER_SIZE = 2;
 
@@ -66,6 +67,9 @@ function Snake(startX, startY, direction, spriteKey, upKey, rightKey, downKey, l
         });
 
         var finder = new PF.AStarFinder();
+        var finder = new PF.AStarFinder({
+            wrapAround: true
+        });
         var head = this.snakeCells[0];
         var fromX = head.x / CELL_WIDTH;
         var fromY = head.y / CELL_WIDTH;
@@ -77,7 +81,7 @@ function Snake(startX, startY, direction, spriteKey, upKey, rightKey, downKey, l
             var nextDirection = getDirectionFromTwoPositions(fromX, fromY, next[0], next[1]);
             this.handleKeyPressed(nextDirection);
         }
-    }
+    };
 
     Snake.prototype.handleKeyPressed = function(keyPressedDirection) {
         var newDirection;

@@ -1,3 +1,4 @@
+'use strict';
 var CELL_WIDTH = 10;
 var NUMBER_OF_GAME_CELLS = 40;
 var GAME_WIDTH = NUMBER_OF_GAME_CELLS * CELL_WIDTH;
@@ -45,8 +46,8 @@ var main = {
         game.stage.backgroundColor = '#ffe88a';
 
         //snakes['player1'] = new Snake(20, 0, DIRECTION.RIGHT, 'player1Cell', Phaser.Keyboard.W, Phaser.Keyboard.D, Phaser.Keyboard.S, Phaser.Keyboard.A);
-        snakes['player1'] = new Snake(20, 0, DIRECTION.RIGHT, 'player1Cell');
-        snakes['player2'] = new Snake(370, 390, DIRECTION.LEFT, 'player2Cell', Phaser.Keyboard.UP, Phaser.Keyboard.RIGHT, Phaser.Keyboard.DOWN, Phaser.Keyboard.LEFT);
+        snakes.player1 = new Snake(20, 0, DIRECTION.RIGHT, 'player1Cell');
+        snakes.player2 = new Snake(370, 390, DIRECTION.LEFT, 'player2Cell', Phaser.Keyboard.UP, Phaser.Keyboard.RIGHT, Phaser.Keyboard.DOWN, Phaser.Keyboard.LEFT);
         //snakes['player2'] = new Snake(370, 390, DIRECTION.LEFT, 'player2Cell');
         var foodLocation = createFoodLocation();
         food = game.add.sprite(foodLocation.x, foodLocation.y, 'foodCell');
@@ -168,13 +169,13 @@ function snakeDied(snake) {
         player2ScoreText = game.add.text(370, 10, "" + player2Score, player2Style);
         //player2's timer is restarted because when a new snake is created its timer will get a little out
         //of sync with the other snake. So we restart the other player's timer as well to sync them up.
-        snakes['player1'] = new Snake(20, 0, DIRECTION.RIGHT, 'player1Cell');
-        snakes['player2'].restartTimer();
+        snakes.player1 = new Snake(20, 0, DIRECTION.RIGHT, 'player1Cell');
+        snakes.player2.restartTimer();
     } else {
         player1Score += 3;
         player1ScoreText.destroy();
         player1ScoreText = game.add.text(10, 10, "" + player1Score, player1Style);
-        snakes['player2'] = new Snake(370, 390, DIRECTION.LEFT, 'player2Cell', Phaser.Keyboard.UP, Phaser.Keyboard.RIGHT, Phaser.Keyboard.DOWN, Phaser.Keyboard.LEFT);
-        snakes['player1'].restartTimer();
+        snakes.player2 = new Snake(370, 390, DIRECTION.LEFT, 'player2Cell', Phaser.Keyboard.UP, Phaser.Keyboard.RIGHT, Phaser.Keyboard.DOWN, Phaser.Keyboard.LEFT);
+        snakes.player1.restartTimer();
     }
 }
