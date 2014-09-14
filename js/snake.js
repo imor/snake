@@ -51,9 +51,10 @@ function Snake(startX, startY, direction, spriteKey, upKey, rightKey, downKey, l
 
     Snake.prototype.findPath = function() {
         var randomInt = game.rnd.integerInRange(1, 100);
-        if (randomInt >= 50) {
-            return;
-        }
+        //Dumbing down the AI
+        //if (randomInt >= 50) {
+        //    return;
+        //}
         var grid = new PF.Grid(NUMBER_OF_GAME_CELLS, NUMBER_OF_GAME_CELLS);
         Object.keys(snakes).forEach(function(key) {
             var snake = snakes[key];
